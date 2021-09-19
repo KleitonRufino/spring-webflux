@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class DemoWebfluxApplication {
 
 	/**
-	 * http://localhost:8080/auth/signup {"username": "sysout", "password":"admin123", "roles": [{"name": "ADMIN"}]}
+	 * http://localhost:8080/auth/signup {"username": "sysout", "password":"admin123", "roles": [{"name": "ROLE_ADMIN"}]}
 	 * http://localhost:8080/auth/signin {"username": "sysout", "password":"admin123"}
 	 * */
 	
