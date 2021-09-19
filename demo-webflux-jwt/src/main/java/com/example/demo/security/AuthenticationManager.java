@@ -8,7 +8,6 @@ import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
@@ -24,22 +23,19 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
 	@Override
 	@SuppressWarnings("unchecked")
 	public Mono<Authentication> authenticate(Authentication authentication) {
-		String authToken = authentication.getCredentials().toString();
-		String username;
-		try {
-			username = tokenProvider.getUsernameFromToken(authToken);
-		} catch (Exception e) {
-			username = null;
-		}
-		if (username != null && ! tokenProvider.isTokenExpired(authToken)) {
-			Claims claims = tokenProvider.getAllClaimsFromToken(authToken);
-			List<String> roles = claims.get("roles", List.class);
-			List<SimpleGrantedAuthority> authorities = roles.stream().map(role -> new SimpleGrantedAuthority(role)).collect(Collectors.toList());
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, username, authorities);
-            SecurityContextHolder.getContext().setAuthentication(new AuthenticatedUser(username, authorities));
-			return Mono.just(auth);
-		} else {
-			return Mono.empty();
-		}
+        String authToken = authentication.getCredentials().toString();
+        String username = tokenProvider.getUsernameFromToken(authToken);
+        return Mono.just(tokenProvider.validateToken(authToken))
+            .filter(valid -> valid)
+            .switchIfEmpty(Mono.empty())
+            .map(valid -> {
+                Claims claims = tokenProvider.getAllClaimsFromToken(authToken);
+                List<String> rolesMap = claims.get("roles", List.class);
+                return new UsernamePasswordAuthenticationToken(
+                    username,
+                    null,
+                    rolesMap.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList())
+                );
+            });
 	}
 }

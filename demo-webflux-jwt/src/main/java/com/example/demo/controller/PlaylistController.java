@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,33 +36,30 @@ public class PlaylistController {
 	@Autowired
 	PlaylistRespository repository;
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
 	@GetMapping
 	public Flux<Playlist> getPlaylist() {
 		return repository.findAll();
 	}
 
-    @PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<Mono<Playlist>> getPlaylistId(@PathVariable String id) {
-		Mono<Playlist> e = repository.findById(id);
-		HttpStatus status = e != null ? HttpStatus.OK : HttpStatus.NOT_FOUND;
-		return new ResponseEntity<Mono<Playlist>>(e, status);
+	public Mono<Playlist> getPlaylistId(@PathVariable String id) {
+//		Mono<Playlist> e = repository.findById(id);
+//		HttpStatus status = e != null ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+		return repository.findById(id);
 	}
-	
-    @PreAuthorize("hasRole('ADMIN')")
+
 	@PostMapping
 	public Mono<Playlist> insert(@RequestBody Playlist playlist) {
 		return repository.save(playlist);
 	}
 
-    @PreAuthorize("hasRole('ADMIN')")
 	@PutMapping
 	public Mono<Playlist> update(@RequestBody Playlist playlist) {
 		return repository.save(playlist);
 	}
 
-    @PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping(value = "/{id}")
 	@ResponseStatus(HttpStatus.OK)
 	public void delete(@PathVariable String id) {
